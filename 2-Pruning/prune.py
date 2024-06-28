@@ -121,7 +121,7 @@ if __name__ == '__main__':
     args.add_argument('--root', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
     args.add_argument('--save', action='store_true')
     args.add_argument('--batch_size', type=int, default=128)
-    args.add_argument('--workers', type=int, default=4)
+    args.add_argument('--workers', type=int, default=8)
     args = args.parse_args()
 
     csv = pd.read_csv(args.csv_path).sample(frac=1).reset_index(drop=True)
