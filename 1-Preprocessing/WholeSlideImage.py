@@ -151,6 +151,7 @@ class WholeSlideImage(object):
             asset_dict[f'level_{i}'] = np.stack([x_coord, y_coord], axis=-1)
         
         # For faster downstream feature extraction, directly resize and save the patches
+        # use the same reading method as in the feature extraction to ensure it is correct
         if self.save_patch:
             patch_path = os.path.join(self.dst, 'patches', f'{self.wsi_name}')
             os.makedirs(patch_path, exist_ok=True)
@@ -158,12 +159,11 @@ class WholeSlideImage(object):
                 level_save_path = os.path.join(patch_path, f'level_{i}')
                 os.makedirs(level_save_path, exist_ok=True)
                 level_coords = asset_dict[f'level_{i}']
-                level_patch_size = int(base_patch_size * self.downsample_factor ** i)
+                level_patch_size = int(self.patch_size * self.downsample_factor ** i)
                 for m in range(level_coords.shape[0]):
                     for n in range(level_coords.shape[1]):
                         x, y = level_coords[m, n]
-                        patch = img[y:y+level_patch_size, x:x+level_patch_size]
-                        patch = cv2.resize(patch, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
+                        patch = np.array(self.wsi.read_region((int(x), int(y)), self.base_level, (level_patch_size, level_patch_size)))
                         cv2.imwrite(os.path.join(level_save_path, f'{m}_{n}_.png'), patch)
         
             overview = cv2.resize(img, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
