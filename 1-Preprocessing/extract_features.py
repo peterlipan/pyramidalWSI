@@ -12,7 +12,7 @@ from dataset_helpers import Whole_Slide_Bag
 from feature_extractors import get_encoder
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-VISIBLE_GPU = '4,5,6,7'
+VISIBLE_GPU = '0,1,2,3'
 
 
 def extract_features(model, level_shapes, feature_dim, dataloader):
