@@ -61,9 +61,13 @@ def main(rank, csv, args):
 
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model = DDP(model, device_ids=[rank])
+    print(f'Model loaded for GPU {rank}!')
 
     for i in range(sub_csv.shape[0]):
+        print(f'Processing {i}th row...')
         if sub_csv.iloc[i]['status'] == 'done':
+
+            print(f'Row {i} has been processed, skipping...')
 
             slide_id = sub_csv.iloc[i]['slide_id']
             slide_name = pathlib.Path(slide_id).stem
