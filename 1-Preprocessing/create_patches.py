@@ -47,8 +47,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Whole Slide Image Processing')
-    parser.add_argument('--src', type=str, default='/vast/palmer/scratch/liu_xiaofeng/li/CAMELYON16')
-    parser.add_argument('--dst', type=str, default='/vast/palmer/scratch/liu_xiaofeng/li/patches_CAMELYON16')
+    parser.add_argument('--src', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/CAMELYON16')
+    parser.add_argument('--dst', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
     parser.add_argument('--patch_size', type=int, default=512)
     parser.add_argument('--base_downsample', type=int, default=1)
     parser.add_argument('--downsample_factor', type=int, default=4)
