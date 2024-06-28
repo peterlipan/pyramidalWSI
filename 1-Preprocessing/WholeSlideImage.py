@@ -55,6 +55,7 @@ class WholeSlideImage(object):
         return level_downsamples
 
     def _visualize_grid(self, img, asset_dict, stop_x, stop_y):
+        scale = self.level_downsamples[self.base_level]
         save_path = os.path.join(self.dst, 'visualize', f'{self.wsi_name}.png')
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         height, width, _ = img.shape
@@ -64,8 +65,8 @@ class WholeSlideImage(object):
 
         for level in range(self.num_levels):
             grid_x, grid_y = asset_dict[f'level_{level}'][:, :, 0], asset_dict[f'level_{level}'][:, :, 1]
-            scaled_grid_x = grid_x[:, 0] / width * resized_width
-            scaled_grid_y = grid_y[0] / height * resized_height
+            scaled_grid_x = grid_x[:, 0] / scale / width * resized_width
+            scaled_grid_y = grid_y[0] / scale / height * resized_height
 
             for x in scaled_grid_x:
                 cv2.line(resized_img, (int(x), 0), (int(x), stop_y-1), self.palette[level], 1 * 2 ** level)
