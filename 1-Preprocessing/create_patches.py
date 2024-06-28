@@ -26,7 +26,7 @@ def init_df(args):
     image_extensions = ['.tif', '.tiff', '.svs', '.mrxs', '.ndpi']
     filenames = [f.name for f in Path(args.src).rglob('*') if f.suffix in image_extensions]
     status = ['tbp'] * len(filenames)
-    process = [''] * len(filenames)
+    process = [1] * len(filenames)
     df = pd.DataFrame({'slide_id': filenames, 'status': status, 'process': process})
     return df
 
