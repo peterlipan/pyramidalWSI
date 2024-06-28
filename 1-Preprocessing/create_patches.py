@@ -9,17 +9,26 @@ import multiprocessing as mp
 
 def process_slide(args, slide_id, dst_dir):
     slide_path = os.path.join(args.src, slide_id)
-    try:
+    if args.debug:
         wsi = WholeSlideImage(slide_path, dst_dir, patch_size=args.patch_size, base_downsample=args.base_downsample,
                               downsample_factor=args.downsample_factor, num_levels=args.num_levels, use_otsu=not args.no_use_otsu,
                               sthresh=args.sthresh, sthresh_up=args.sthresh_up, mthresh=args.mthresh, padding=not args.no_padding,
                               visualize=not args.no_visualize, visualize_width=args.visualize_width, skip=not args.no_skip, save_patch=args.save_patch)
         wsi.multi_level_segment()
-        return (slide_id, 'done')
-    except Exception as e:
-        print(f'Error processing {slide_id}:')
-        print(e)
-        return (slide_id, 'error')
+        return slide_id, 'done'
+
+    else:
+        try:
+            wsi = WholeSlideImage(slide_path, dst_dir, patch_size=args.patch_size, base_downsample=args.base_downsample,
+                                  downsample_factor=args.downsample_factor, num_levels=args.num_levels, use_otsu=not args.no_use_otsu,
+                                  sthresh=args.sthresh, sthresh_up=args.sthresh_up, mthresh=args.mthresh, padding=not args.no_padding,
+                                  visualize=not args.no_visualize, visualize_width=args.visualize_width, skip=not args.no_skip, save_patch=args.save_patch)
+            wsi.multi_level_segment()
+            return slide_id, 'done'
+        except Exception as e:
+            print(f'Error processing {slide_id}:')
+            print(e)
+            return slide_id, 'error'
 
 
 def init_df(args):
@@ -65,5 +74,6 @@ if __name__ == '__main__':
     parser.add_argument('--visualize_width', type=int, default=1024)
     parser.add_argument('--no_skip', action='store_true')
     parser.add_argument('--save_patch', action='store_true')
+    parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
     main(args)
