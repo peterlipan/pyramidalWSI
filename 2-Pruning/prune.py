@@ -55,6 +55,7 @@ def main(rank, csv, args):
 
     # Load model
     model = UNetModel(num_input_channels=3, num_output_channels=2, encoder='resnet50', decoder_block=[3])
+    print(f'Loading model from {args.model_path}...')
     model.load_state_dict(torch.load(args.model_path))
     model = model.cuda()
 
