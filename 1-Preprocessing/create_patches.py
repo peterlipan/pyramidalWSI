@@ -38,7 +38,7 @@ def main(args):
     df.to_csv(df_path, index=False)
 
     with mp.Pool(processes=args.workers) as pool:
-        results = [pool.apply_async(process_slide, args=(args, slide_id, args.dst)) for slide_id in df['slide_id']]
+        results = [pool.apply(process_slide, args=(args, slide_id, args.dst)) for slide_id in df['slide_id']]
         pool.close()
         pool.join()
         for i, res in tqdm(enumerate(results), total=len(results)):
