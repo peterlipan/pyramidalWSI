@@ -55,24 +55,15 @@ def main(rank, csv, args):
 
     # Load model
     model = UNetModel(num_input_channels=3, num_output_channels=2, encoder='resnet50', decoder_block=[3])
-    print(f'Loading model from {args.model_path}...')
     model.load_state_dict(torch.load(args.model_path))
     model = model.to(rank)
 
-    print(f'Model loaded for GPU {rank}!')
-
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-    print(f'SyncBatchNorm for GPU {rank}!')
     model = DDP(model, device_ids=[rank])
-
-    print(f'Model parallel for GPU {rank}!')
 
 
     for i in range(sub_csv.shape[0]):
-        print(f'Processing {i}th row...')
         if sub_csv.iloc[i]['status'] == 'done':
-
-            print(f'Row {i} has been processed, skipping...')
 
             slide_id = sub_csv.iloc[i]['slide_id']
             slide_name = pathlib.Path(slide_id).stem
