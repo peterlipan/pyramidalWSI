@@ -4,6 +4,22 @@ import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 from WholeSlideImage import WholeSlideImage
+import multiprocessing as mp
+
+
+def process_slide(args, slide_id, dst_dir):
+    slide_path = os.path.join(args.src, slide_id)
+    try:
+        wsi = WholeSlideImage(slide_path, dst_dir, patch_size=args.patch_size, base_downsample=args.base_downsample,
+                              downsample_factor=args.downsample_factor, num_levels=args.num_levels, use_otsu=not args.no_use_otsu,
+                              sthresh=args.sthresh, sthresh_up=args.sthresh_up, mthresh=args.mthresh, padding=not args.no_padding,
+                              visualize=not args.no_visualize, visualize_width=args.visualize_width, skip=not args.no_skip)
+        wsi.multi_level_segment()
+        return (slide_id, 'done')
+    except Exception as e:
+        print(f'Error processing {slide_id}:')
+        print(e)
+        return (slide_id, 'error')
 
 
 def init_df(args):
@@ -20,22 +36,12 @@ def main(args):
     df_path = os.path.join(args.dst, 'status.csv')
     df = init_df(args)
     df.to_csv(df_path, index=False)
-    for i in tqdm(range(df.shape[0])):
-        slide_id = df.loc[i, 'slide_id']
-        print(f'Processing {slide_id}...')
-        slide_path = os.path.join(args.src, slide_id)
-        os.makedirs(args.dst, exist_ok=True)
-        try:
-            wsi = WholeSlideImage(slide_path, args.dst, patch_size=args.patch_size, base_downsample=args.base_downsample,
-                                  downsample_factor=args.downsample_factor, num_levels=args.num_levels, use_otsu=not args.no_use_otsu,
-                                  sthresh=args.sthresh, sthresh_up=args.sthresh_up, mthresh=args.mthresh, padding=not args.no_padding,
-                                  visualize=not args.no_visualize, visualize_width=args.visualize_width, skip=not args.no_skip)
-            wsi.multi_level_segment()
-            df.loc[i, 'status'] = 'done'
-        except Exception as e:
-            print(f'Error processing {slide_id} of subtype!!!')
-            print(e)
-            df.loc[i, 'status'] = 'error'
+
+    with mp.Pool(processes=os.cpu_count()) as pool:
+        results = [pool.apply_async(process_slide, args=(args, slide_id, args.dst)) for slide_id in df['slide_id']]
+        for i, res in tqdm(enumerate(results), total=len(results)):
+            slide_id, status = res.get()
+            df.loc[df['slide_id'] == slide_id, 'status'] = status
         df.to_csv(df_path, index=False)
 
 
