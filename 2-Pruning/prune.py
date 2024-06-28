@@ -13,7 +13,7 @@ from segmentation_model import UNetModel
 from patch_tree import PatchTree, LevelPatchDataset
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-VISIBLE_GPU = '0,1,2,3,4,5'
+VISIBLE_GPU = '0,1,2,3'
 
 
 def inference(model, images):
@@ -115,9 +115,9 @@ def main(rank, csv, args):
     
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
-    args.add_argument('--csv_path', type=str, default='/mnt/zhen_chen/pyramid_patches_512/status.csv')
-    args.add_argument('--model_path', type=str, default='/mnt/zhen_chen/AIEC/2-Pruning/fcn-tissue_mask.pth')
-    args.add_argument('--root', type=str, default='/mnt/zhen_chen/pyramid_patches_512')
+    args.add_argument('--csv_path', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16/status.csv')
+    args.add_argument('--model_path', type=str, default='./fcn-tissue_mask.pth')
+    args.add_argument('--root', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
     args.add_argument('--save', action='store_true')
     args.add_argument('--batch_size', type=int, default=128)
     args.add_argument('--workers', type=int, default=4)
