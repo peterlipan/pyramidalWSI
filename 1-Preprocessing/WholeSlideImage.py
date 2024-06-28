@@ -10,7 +10,7 @@ import numpy as np
 class WholeSlideImage(object):
     def __init__(self, src, dst, patch_size=512, base_downsample=1, downsample_factor=4, num_levels=3,
                  use_otsu=True, sthresh=20, sthresh_up=255, mthresh=7, padding=True, visualize=True,
-                 visualize_width=1024, skip=True):
+                 visualize_width=1024, skip=True, save_patch=False):
         self.src = src
         self.dst = dst
         self.patch_size = patch_size
@@ -36,6 +36,7 @@ class WholeSlideImage(object):
         self.visualize = visualize
         self.visualize_width = visualize_width
         self.skip = skip
+        self.save_patch = save_patch
         self.palette = [(173, 216, 230, 255), (255, 182, 193, 255), (152, 251, 152, 255), (230, 230, 250, 255),
                         (255, 255, 0, 255), (255, 165, 0, 255), (255, 0, 255, 255), (64, 224, 208, 255),
                         (168, 168, 120, 255), (210, 105, 30, 255), (255, 199, 0, 255), (138, 54, 15, 255)]
@@ -97,12 +98,10 @@ class WholeSlideImage(object):
 
     def multi_level_segment(self):
         h5_path = os.path.join(self.dst, 'coordinates', f'{self.wsi_name}.h5')
-        patch_path = os.path.join(self.dst, 'patches', f'{self.wsi_name}')
         if os.path.exists(h5_path) and self.skip:
             print(f'\n{self.wsi_name} already processed. Skipping...')
             return
         os.makedirs(os.path.dirname(h5_path), exist_ok=True)
-        os.makedirs(patch_path, exist_ok=True)
 
         # load the WSI
         print(f'loading {self.wsi_name}...')
@@ -122,16 +121,22 @@ class WholeSlideImage(object):
         # the minimum bounding box of the whole tissue
         contours, _ = cv2.findContours(img_otsu, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contours = np.concatenate(contours)
+        # scale the coord to level 0
+        scale = self.level_downsamples[self.base_level]
+        contours = (contours * scale).astype(np.int32)
+
         x, y, w, h = cv2.boundingRect(contours)
 
-        img_w, img_h = self.base_dimensions
+        img_w, img_h = self.level_dimensions[0]
+        base_patch_size = self.patch_size * scale[0]
+
         if self.padding:
             stop_y = y + h
             stop_x = x + w
         else:
             # drop the last patch if it is smaller than the patch size
-            stop_y = min(y + h, img_h - self.patch_size + 1)
-            stop_x = min(x + w, img_w - self.patch_size + 1)
+            stop_y = min(y + h, img_h - base_patch_size + 1)
+            stop_x = min(x + w, img_w - base_patch_size + 1)
 
         print("Bounding box: ", x, y, w, h)
         print("Contour area: ", cv2.contourArea(contours))
@@ -139,24 +144,27 @@ class WholeSlideImage(object):
         # No need to check the holes. Directly generate the mesh
         asset_dict = {}
         for i in range(self.num_levels):
-            step_size = self.patch_size * self.downsample_factor ** i
+            step_size = int(base_patch_size * self.downsample_factor ** i)
             x_range = np.arange(x, stop_x, step_size)
             y_range = np.arange(y, stop_y, step_size)
             x_coord, y_coord = np.meshgrid(x_range, y_range, indexing='ij')
             asset_dict[f'level_{i}'] = np.stack([x_coord, y_coord], axis=-1)
         
-        # For faster feature extraction, directly resize and save the patches
-        for i in range(self.num_levels):
-            level_save_path = os.path.join(patch_path, f'level_{i}')
-            os.makedirs(level_save_path, exist_ok=True)
-            level_coords = asset_dict[f'level_{i}']
-            level_patch_size = int(self.patch_size * self.downsample_factor ** i)
-            for m in range(level_coords.shape[0]):
-                for n in range(level_coords.shape[1]):
-                    x, y = level_coords[m, n]
-                    patch = img[y:y+level_patch_size, x:x+level_patch_size]
-                    patch = cv2.resize(patch, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
-                    cv2.imwrite(os.path.join(level_save_path, f'{m}_{n}_.png'), patch)
+        # For faster downstream feature extraction, directly resize and save the patches
+        if self.save_patch:
+            patch_path = os.path.join(self.dst, 'patches', f'{self.wsi_name}')
+            os.makedirs(patch_path, exist_ok=True)
+            for i in range(self.num_levels):
+                level_save_path = os.path.join(patch_path, f'level_{i}')
+                os.makedirs(level_save_path, exist_ok=True)
+                level_coords = asset_dict[f'level_{i}']
+                level_patch_size = int(base_patch_size * self.downsample_factor ** i)
+                for m in range(level_coords.shape[0]):
+                    for n in range(level_coords.shape[1]):
+                        x, y = level_coords[m, n]
+                        patch = img[y:y+level_patch_size, x:x+level_patch_size]
+                        patch = cv2.resize(patch, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
+                        cv2.imwrite(os.path.join(level_save_path, f'{m}_{n}_.png'), patch)
         
         overview = cv2.resize(img, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
         cv2.imwrite(os.path.join(patch_path, 'overview.png'), overview)

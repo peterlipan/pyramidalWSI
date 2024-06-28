@@ -13,7 +13,7 @@ def process_slide(args, slide_id, dst_dir):
         wsi = WholeSlideImage(slide_path, dst_dir, patch_size=args.patch_size, base_downsample=args.base_downsample,
                               downsample_factor=args.downsample_factor, num_levels=args.num_levels, use_otsu=not args.no_use_otsu,
                               sthresh=args.sthresh, sthresh_up=args.sthresh_up, mthresh=args.mthresh, padding=not args.no_padding,
-                              visualize=not args.no_visualize, visualize_width=args.visualize_width, skip=not args.no_skip)
+                              visualize=not args.no_visualize, visualize_width=args.visualize_width, skip=not args.no_skip, save_patch=args.save_patch)
         wsi.multi_level_segment()
         return (slide_id, 'done')
     except Exception as e:
@@ -64,5 +64,6 @@ if __name__ == '__main__':
     parser.add_argument('--no_visualize', action='store_true')
     parser.add_argument('--visualize_width', type=int, default=1024)
     parser.add_argument('--no_skip', action='store_true')
+    parser.add_argument('--save_patch', action='store_true')
     args = parser.parse_args()
     main(args)
