@@ -90,7 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('--wsi_dir', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/CAMELYON16')
     parser.add_argument('--h5_dir', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
     parser.add_argument('--save_dir', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/features_CAMELYON16')
-    parser.add_argument('--backbone', type=str, default='densnet121')
+    parser.add_argument('--backbone', type=str, default='densenet121')
     parser.add_argument('--patch_size', type=int, default=256)
     parser.add_argument('--batch_size', type=int, default=256)
     parser.add_argument('--num_workers', type=int, default=0)
