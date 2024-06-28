@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# wandb logs
+**/wandb
+
+# MAC os
+.DS_Store
+__MACOSX/
+
+# PyCharm
+**/.idea
+
+
+# results
+results/
+
+# checkpoints
+**/checkpoints
+*.csv
+
+# weights
+*.pth
