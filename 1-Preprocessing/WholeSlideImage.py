@@ -105,7 +105,7 @@ class WholeSlideImage(object):
         os.makedirs(patch_path, exist_ok=True)
 
         # load the WSI
-        print('loading WSI...')
+        print(f'loading {self.wsi_name}...')
         start = time.time()
         img = np.array(self.wsi.read_region((0, 0), self.base_level, self.base_dimensions))
         print(f'WSI loaded in {time.time() - start:.2f}s')
