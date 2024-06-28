@@ -59,9 +59,13 @@ def main(rank, csv, args):
     model.load_state_dict(torch.load(args.model_path))
     model = model.cuda()
 
+    print(f'Model loaded for GPU {rank}!')
+
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model = DDP(model, device_ids=[rank])
-    print(f'Model loaded for GPU {rank}!')
+
+    print(f'Model parallel for GPU {rank}!')
+
 
     for i in range(sub_csv.shape[0]):
         print(f'Processing {i}th row...')
