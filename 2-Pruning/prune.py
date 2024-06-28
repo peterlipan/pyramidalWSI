@@ -50,7 +50,7 @@ def main(rank, csv, args):
     args.device = rank
     sub_csv = csv[rank]
 
-    dist.init_process_group("nccl", rank=rank, world_size=args.world_size)
+    dist.init_process_group("mpi", rank=rank, world_size=args.world_size)
     torch.cuda.set_device(rank)
 
     # Load model
@@ -63,7 +63,7 @@ def main(rank, csv, args):
 
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     print(f'SyncBatchNorm for GPU {rank}!')
-    model = DDP(model)
+    model = DDP(model, device_ids=[rank])
 
     print(f'Model parallel for GPU {rank}!')
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = VISIBLE_GPU
     os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '8888'
+    os.environ['MASTER_PORT'] = '12345'
 
     # split the csv into num_gpu subtables
     split_dfs = np.array_split(csv, num_gpu)
