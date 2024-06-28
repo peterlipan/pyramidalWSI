@@ -166,8 +166,8 @@ class WholeSlideImage(object):
                         patch = cv2.resize(patch, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
                         cv2.imwrite(os.path.join(level_save_path, f'{m}_{n}_.png'), patch)
         
-        overview = cv2.resize(img, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
-        cv2.imwrite(os.path.join(patch_path, 'overview.png'), overview)
+            overview = cv2.resize(img, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
+            cv2.imwrite(os.path.join(patch_path, 'overview.png'), overview)
 
         if self.visualize:
             self._visualize_grid(img, asset_dict, stop_x, stop_y)
@@ -180,14 +180,3 @@ class WholeSlideImage(object):
         assert asset_dict, "Asset dictionary is empty"
 
         self.save_hdf5(h5_path, asset_dict, attr_dict, mode='w')
-
-    def process_overview(self):
-        patch_path = os.path.join(self.dst, 'patches', f'{self.wsi_name}', 'overview.png')
-
-        print('loading WSI...')
-        start = time.time()
-        img = np.array(self.wsi.read_region((0, 0), self.base_level, self.base_dimensions))
-        print(f'WSI loaded in {time.time() - start:.2f}s')
-
-        overview = cv2.resize(img, (self.patch_size, self.patch_size), interpolation=cv2.INTER_CUBIC)
-        cv2.imwrite(patch_path, overview)
