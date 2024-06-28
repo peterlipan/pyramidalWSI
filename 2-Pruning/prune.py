@@ -57,7 +57,7 @@ def main(rank, csv, args):
     model = UNetModel(num_input_channels=3, num_output_channels=2, encoder='resnet50', decoder_block=[3])
     print(f'Loading model from {args.model_path}...')
     model.load_state_dict(torch.load(args.model_path))
-    model = model.cuda()
+    model = model.to(rank)
 
     print(f'Model loaded for GPU {rank}!')
 
@@ -101,7 +101,7 @@ def main(rank, csv, args):
                 level_dataloader = DataLoader(level_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
 
                 for images, filenames, node_idx in level_dataloader:
-                    images = images.cuda(non_blocking=True)
+                    images = images.to(rank)
                     probs = inference(model, images)
 
                     tissue_probs = probs[..., 1]
