@@ -37,7 +37,7 @@ def main(args):
     df = init_df(args)
     df.to_csv(df_path, index=False)
 
-    with mp.Pool(processes=os.cpu_count()) as pool:
+    with mp.Pool(processes=args.workers) as pool:
         results = [pool.apply_async(process_slide, args=(args, slide_id, args.dst)) for slide_id in df['slide_id']]
         for i, res in tqdm(enumerate(results), total=len(results)):
             slide_id, status = res.get()
@@ -55,6 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_levels', type=int, default=3)
     parser.add_argument('--no_use_otsu', action='store_true')
     parser.add_argument('--sthresh', type=int, default=20)
+    parser.add_argument('--workers', type=int, default=8)
     parser.add_argument('--sthresh_up', type=int, default=255)
     parser.add_argument('--mthresh', type=int, default=7)
     parser.add_argument('--no_padding', action='store_true')
