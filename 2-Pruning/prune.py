@@ -61,7 +61,6 @@ def main(rank, csv, args):
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model = DDP(model, device_ids=[rank])
 
-
     for i in range(sub_csv.shape[0]):
         if sub_csv.iloc[i]['status'] == 'done':
 
@@ -87,9 +86,9 @@ def main(rank, csv, args):
                     save_dir = os.path.join(heatmap_dir, f'level_{level_id}')
                     os.makedirs(save_dir, exist_ok=True)
 
-                level_dataset = LevelPatchDataset(tree, level_id)
+                level_dataset = LevelPatchDataset(tree, level_id, patch_size=args.patch_size)
                 num_patches += len(level_dataset)
-                level_dataloader = DataLoader(level_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
+                level_dataloader = DataLoader(level_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
 
                 for images, filenames, node_idx in level_dataloader:
                     images = images.to(rank)
@@ -121,6 +120,7 @@ if __name__ == '__main__':
     args.add_argument('--root', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
     args.add_argument('--save', action='store_true')
     args.add_argument('--batch_size', type=int, default=128)
+    args.add_argument('--patch_size', type=int, default=256)
     args.add_argument('--workers', type=int, default=0)
     args = args.parse_args()
 
