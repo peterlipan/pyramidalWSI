@@ -50,7 +50,7 @@ def main(rank, csv, args):
     args.device = rank
     sub_csv = csv[rank]
 
-    dist.init_process_group("mpi", rank=rank, world_size=args.world_size)
+    dist.init_process_group("gloo", rank=rank, world_size=args.world_size)
     torch.cuda.set_device(rank)
 
     # Load model
