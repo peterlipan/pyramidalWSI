@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = VISIBLE_GPU
     os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12345'
+    os.environ['MASTER_PORT'] = '8888'
 
     # split the csv into num_gpu subtables
     split_dfs = np.array_split(csv, num_gpu)
