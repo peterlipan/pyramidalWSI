@@ -63,7 +63,7 @@ def main(rank, csv, args):
 
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     print(f'SyncBatchNorm for GPU {rank}!')
-    model = DDP(model, device_ids=[rank])
+    model = DDP(model)
 
     print(f'Model parallel for GPU {rank}!')
 
