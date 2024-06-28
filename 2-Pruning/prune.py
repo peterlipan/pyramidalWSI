@@ -64,15 +64,14 @@ def main(rank, csv, args):
     for i in range(sub_csv.shape[0]):
         if sub_csv.iloc[i]['status'] == 'done':
 
-            subtype = sub_csv.iloc[i]['subtype']
             slide_id = sub_csv.iloc[i]['slide_id']
             slide_name = pathlib.Path(slide_id).stem
-            print(f'Processing {slide_name} of subtype {subtype}')
+            print(f'Processing {slide_name}...')
 
-            patch_path = os.path.join(args.root, subtype, 'patches', slide_name)
-            coord_path = os.path.join(args.root, subtype, 'coordinates', f'{slide_name}.h5')
+            patch_path = os.path.join(args.root, 'patches', slide_name)
+            coord_path = os.path.join(args.root, 'coordinates', f'{slide_name}.h5')
             if args.save:
-                heatmap_dir = os.path.join(args.root, subtype, 'heatmap', slide_name)
+                heatmap_dir = os.path.join(args.root, 'heatmap', slide_name)
                 os.makedirs(heatmap_dir, exist_ok=True)
 
             tree = PatchTree(coord_path, patch_path)
@@ -82,7 +81,7 @@ def main(rank, csv, args):
                 if level_id > 0:
                     threshold = 1 / tree.downsample_factor ** 2
                 else:
-                    threshold = 0.5
+                    threshold = 0.1
                 if args.save:
                     save_dir = os.path.join(heatmap_dir, f'level_{level_id}')
                     os.makedirs(save_dir, exist_ok=True)
@@ -111,8 +110,9 @@ def main(rank, csv, args):
                         save_probs = probs[save_mask]
                         save_heatmaps(save_images, save_names, save_probs, save_dir)
         
-        print(f'Pruned {num_pruned} out of {num_patches} patches for WSI {slide_name}!')
-    
+            print(f'Pruned {num_pruned} out of {num_patches} patches for WSI {slide_name}!')
+
+
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
     args.add_argument('--csv_path', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16/status.csv')
