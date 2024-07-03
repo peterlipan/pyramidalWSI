@@ -71,10 +71,14 @@ class WholeSlideImage(object):
             scaled_grid_y = grid_y[0] / scale / height * resized_height
 
             for x in set(scaled_grid_x):
-                cv2.line(resized_img, (int(x), 0), (int(x), scaled_stop_y), self.palette[level], 1 * 2 ** level)
+                cv2.line(resized_img, (int(x), 0), (int(x), scaled_stop_y-1), self.palette[level], 1 * 2 ** level)
 
             for y in set(scaled_grid_y):
-                cv2.line(resized_img, (0, int(y)), (scaled_stop_x, int(y)), self.palette[level], 1 * 2 ** level)
+                cv2.line(resized_img, (0, int(y)), (scaled_stop_x-1, int(y)), self.palette[level], 1 * 2 ** level)
+
+            # draw the end line
+            cv2.line(resized_img, (scaled_stop_x-1, 0), (scaled_stop_x-1, scaled_stop_y-1), self.palette[level], 1 * 2 ** level)
+            cv2.line(resized_img, (0, scaled_stop_y-1), (scaled_stop_x-1, scaled_stop_y-1), self.palette[level], 1 * 2 ** level)
 
         cv2.imwrite(save_path, resized_img)
 
