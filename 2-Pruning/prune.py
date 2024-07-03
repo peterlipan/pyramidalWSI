@@ -78,10 +78,9 @@ def main(rank, csv, args):
             num_patches = 0
             num_pruned = 0
             for level_id in reversed(range(tree.num_levels)):
-                if level_id > 0:
-                    threshold = 1 / tree.downsample_factor ** 2
-                else:
-                    threshold = 0.1
+
+                threshold = args.threshold / tree.downsample_factor ** level_id ** 2
+
                 if args.save:
                     save_dir = os.path.join(heatmap_dir, f'level_{level_id}')
                     os.makedirs(save_dir, exist_ok=True)
@@ -122,6 +121,7 @@ if __name__ == '__main__':
     args.add_argument('--batch_size', type=int, default=128)
     args.add_argument('--patch_size', type=int, default=256)
     args.add_argument('--workers', type=int, default=0)
+    args.add_argument('--threshold', type=float, default=0.1, help='Threshold of tissue area at the lowest level')
     args = args.parse_args()
 
     csv = pd.read_csv(args.csv_path).sample(frac=1).reset_index(drop=True)

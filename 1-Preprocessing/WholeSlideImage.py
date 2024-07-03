@@ -56,7 +56,7 @@ class WholeSlideImage(object):
 
     def _visualize_grid(self, img, asset_dict, stop_x, stop_y):
         scale = self.level_downsamples[self.base_level][0]
-        save_path = os.path.join(self.dst, 'visualize', f'{self.wsi_name}.png')
+        save_path = os.path.join(self.dst, 'visualization', f'{self.wsi_name}.png')
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         height, width, _ = img.shape
         new_height = int(self.visualize_width * height / width)
