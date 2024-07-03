@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--dst', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
     parser.add_argument('--patch_size', type=int, default=256)
     parser.add_argument('--base_downsample', type=int, default=20)
-    parser.add_argument('--downsample_factor', type=int, default=4)
+    parser.add_argument('--downsample_factor', type=int, default=2)
     parser.add_argument('--num_levels', type=int, default=3)
     parser.add_argument('--no_use_otsu', action='store_true')
     parser.add_argument('--sthresh', type=int, default=20)
