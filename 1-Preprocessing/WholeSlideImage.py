@@ -62,8 +62,8 @@ class WholeSlideImage(object):
         new_height = int(self.visualize_width * height / width)
         resized_img = cv2.resize(img, (self.visualize_width, new_height), interpolation=cv2.INTER_CUBIC)
         resized_height, resized_width, _ = resized_img.shape
-        scaled_stop_x = stop_x / scale / width * resized_width
-        scaled_stop_y = stop_y / scale / height * resized_height
+        scaled_stop_x = int(stop_x / scale / width * resized_width)
+        scaled_stop_y = int(stop_y / scale / height * resized_height)
 
         for level in range(self.num_levels):
             grid_x, grid_y = asset_dict[f'level_{level}'][:, :, 0], asset_dict[f'level_{level}'][:, :, 1]
