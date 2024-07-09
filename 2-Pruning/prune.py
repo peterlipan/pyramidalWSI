@@ -13,8 +13,6 @@ from segmentation_model import UNetModel
 from patch_tree import PatchTree, LevelPatchDataset
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-VISIBLE_GPU = '0,1,2,3'
-
 
 def inference(model, images):
     model.eval()
@@ -50,7 +48,7 @@ def main(rank, csv, args):
     args.device = rank
     sub_csv = csv[rank]
 
-    dist.init_process_group("gloo", rank=rank, world_size=args.world_size)
+    dist.init_process_group("nccl", rank=rank, world_size=args.world_size)
     torch.cuda.set_device(rank)
 
     # Load model
@@ -70,11 +68,12 @@ def main(rank, csv, args):
 
             patch_path = os.path.join(args.root, 'patches', slide_name)
             coord_path = os.path.join(args.root, 'coordinates', f'{slide_name}.h5')
+            wsi_path = os.path.join(args.wsi_root, f'{slide_name}.tif')
             if args.save:
                 heatmap_dir = os.path.join(args.root, 'heatmap', slide_name)
                 os.makedirs(heatmap_dir, exist_ok=True)
 
-            tree = PatchTree(coord_path, patch_path, mode=args.mode)
+            tree = PatchTree(coord_path, patch_path, wsi_path, mode=args.mode)
             num_patches = 0
             num_pruned = 0
             for level_id in reversed(range(tree.num_levels)):
@@ -117,25 +116,28 @@ def main(rank, csv, args):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
-    args.add_argument('--csv_path', type=str, default='/mnt/zhen_chen/patches_AIEC/MMRd/status.csv')
+    args.add_argument('--csv_path', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16/status.csv')
     # url: https://tiatoolbox.dcs.warwick.ac.uk/models/seg/fcn-tissue_mask.pth
     args.add_argument('--model_path', type=str, default='./fcn-tissue_mask.pth')
-    args.add_argument('--root', type=str, default='/mnt/zhen_chen/patches_AIEC/MMRd')
+    args.add_argument('--root', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/patches_CAMELYON16')
+    args.add_argument('--wsi_root', type=str, default='/vast/palmer/scratch/liu_xiaofeng/xl693/li/CAMELYON16')
     args.add_argument('--save', action='store_true')
-    args.add_argument('--batch_size', type=int, default=128)
+    args.add_argument('--batch_size', type=int, default=512)
     args.add_argument('--patch_size', type=int, default=256)
     args.add_argument('--workers', type=int, default=0)
     args.add_argument('--threshold', type=float, default=0.1, help='Threshold of tissue area at the lowest level')
     args.add_argument('--mode', type=str, default='patch')
+    args.add_argument('--visible_gpu', type=str, default='0,1,2,3')
+    args.add_argument('--port', type=str, default='12345')
     args = args.parse_args()
 
     csv = pd.read_csv(args.csv_path).sample(frac=1).reset_index(drop=True)
-    num_gpu = len(VISIBLE_GPU.split(','))
+    num_gpu = len(args.visible_gpu.split(','))
     args.world_size = num_gpu
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = VISIBLE_GPU
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.visible_gpu
     os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12345'
+    os.environ['MASTER_PORT'] = args.port
 
     # split the csv into num_gpu subtables
     split_dfs = np.array_split(csv, num_gpu)
